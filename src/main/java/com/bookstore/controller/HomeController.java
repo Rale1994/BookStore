@@ -31,6 +31,7 @@ import java.util.UUID;
 @Controller
 public class HomeController {
 
+
     @Autowired
     private JavaMailSender mailSender;
 
@@ -70,7 +71,7 @@ public class HomeController {
         model.addAttribute("classActiveNewAccount", true);
         model.addAttribute("email", userEmail);
         model.addAttribute("username", username);
-
+        String s = "abc";
         if (userService.findByUsername(username) != null) {
             model.addAttribute("usernameExist", true);
             return "myAccount";
