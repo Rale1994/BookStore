@@ -57,9 +57,35 @@ public class HomeController {
     }
 
     @RequestMapping("/forgetPassword")
-    public String forgetPassword(
-            Model model) {
+    public String forgetPassword(HttpServletRequest request,
+                                 Model model, @ModelAttribute("email") String userEmail) throws Exception {
         model.addAttribute("classActiveForgetPassword", true);
+
+        User user = userService.findByEmail(userEmail);
+        if (user == null) {
+            model.addAttribute("emailNotExist", true);
+            return "myAccount";
+        }
+        String password = SecurityUtility.randomPasswordGenerator();
+
+        String encryptedPassword = SecurityUtility.passwordEncoder().encode(password);
+
+        user.setPassword(encryptedPassword);
+
+
+        userService.saveUser(user);
+
+        String token = UUID.randomUUID().toString();
+
+        userService.createPasswordResetTokenForUser(user, token);
+
+        String appUrl = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+
+        SimpleMailMessage newEmail = mailConstructor.constructResetTokenEmail(appUrl, request.getLocale(), token, user, password);
+
+        mailSender.send(newEmail);
+
+        model.addAttribute("forgetPasswordEmailSent", "true");
 
         return "myAccount";
     }
@@ -71,13 +97,13 @@ public class HomeController {
         model.addAttribute("classActiveNewAccount", true);
         model.addAttribute("email", userEmail);
         model.addAttribute("username", username);
-        String s = "abc";
+
         if (userService.findByUsername(username) != null) {
             model.addAttribute("usernameExist", true);
             return "myAccount";
         }
         if (userService.findByEmail(userEmail) != null) {
-            model.addAttribute("email", true);
+            model.addAttribute("emailExist", true);
             return "myAccount";
         }
         User user = new User();
@@ -116,8 +142,7 @@ public class HomeController {
 
 
     @RequestMapping("/newUser")
-    public String newUser(Locale locale,
-                          @RequestParam("token") String token, Model model) {
+    public String newUser(Locale locale, @RequestParam("token") String token, Model model) {
         PasswordResetToken passToken = userService.getPasswordResetToken(token);
         if (passToken == null) {
             String message = "Invalid token";
@@ -133,6 +158,7 @@ public class HomeController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        model.addAttribute("user", user);
 
         model.addAttribute("classActiveEdit", true);
         return "myProfile";
