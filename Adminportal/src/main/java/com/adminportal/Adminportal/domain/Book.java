@@ -13,7 +13,7 @@ public class Book {
     private String title;
     private String author;
     private String publisher;
-    private String publicDate;
+    private String publicationDate;
     private String language;
     private String category;
     private int numberOfPages;
@@ -63,12 +63,12 @@ public class Book {
         this.publisher = publisher;
     }
 
-    public String getPublicDate() {
-        return publicDate;
+    public String getPublicationDate() {
+        return publicationDate;
     }
 
-    public void setPublicDate(String publicDate) {
-        this.publicDate = publicDate;
+    public void setPublicationDate(String publicationDate) {
+        this.publicationDate = publicationDate;
     }
 
     public String getLanguage() {
