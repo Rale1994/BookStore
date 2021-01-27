@@ -1,9 +1,11 @@
 package com.bookstore.controller;
 
+import com.bookstore.domain.Book;
 import com.bookstore.domain.User;
 import com.bookstore.security.PasswordResetToken;
 import com.bookstore.security.Role;
 import com.bookstore.security.UserRole;
+import com.bookstore.service.BookService;
 import com.bookstore.service.UserService;
 import com.bookstore.serviceImpl.UserSecurityService;
 import com.bookstore.utility.MailConstructor;
@@ -23,10 +25,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
+import javax.websocket.server.PathParam;
+import java.security.Principal;
+import java.util.*;
 
 @Controller
 public class HomeController {
@@ -43,6 +44,9 @@ public class HomeController {
 
     @Autowired
     private UserSecurityService userSecurityService;
+
+    @Autowired
+    private BookService bookService;
 
     @RequestMapping("/")
     public String index() {
@@ -164,5 +168,34 @@ public class HomeController {
         return "myProfile";
     }
 
+    @RequestMapping("/bookshelf")
+    public String bookShelf(Model model) {
+        List<Book> bookList = bookService.findAll();
+        model.addAttribute("bookList", bookList);
+        return "bookShelf";
 
+    }
+
+    @RequestMapping("/bookDetail")
+    public String bookDetail(
+            @PathParam("id") Long id, Model model, Principal principal) {
+        if (principal != null) {
+            String username=principal.getName();
+            User user= userService.findByUsername(username);
+            model.addAttribute("user", user);
+        }
+       Book book= bookService.getOne(id);
+       model.addAttribute("book", book);
+
+
+
+        List<Integer> qtyList= Arrays.asList(1,2,3,4,5,6,7,8,9,10);
+
+        model.addAttribute("qtyList", qtyList);
+
+        model.addAttribute("qty",1);
+
+        return "bookDetail";
+
+    }
 }
